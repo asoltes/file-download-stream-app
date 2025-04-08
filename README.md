@@ -1,6 +1,6 @@
 # Flask Presigned URL Expiration App with Docker
 
-This project demonstrates a simple Flask web application that handles presigned URLs, countdown timers, and an expired URL page with a **grumpy cat image**. This README focuses on building and running the application using Docker.
+This project demonstrates a simple Flask web application that handles presigned URLs, countdown timers,This README focuses on building and running the application using Docker.
 
 ## Prerequisites
 
