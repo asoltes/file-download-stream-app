@@ -1,10 +1,22 @@
 from flask import Flask, render_template, jsonify
+import os
 import boto3
 from botocore.exceptions import ClientError
 from datetime import datetime, timedelta
 import threading
 
 app = Flask(__name__)
+
+START_TIME = datetime.utcnow()
+
+def get_uptime():
+    delta = datetime.utcnow() - START_TIME
+    return str(delta).split('.')[0]  # drop microseconds
+
+POD_NAME = os.getenv("POD_NAME", "unknown-pod")
+NODE_NAME = os.getenv("NODE_NAME", "unknown-node")
+POD_IP = os.getenv("POD_IP", "unknown-ip")
+HOST_IP = os.getenv("HOST_IP", "unknown-host")
 
 # Config
 BUCKET_NAME = "andres-stream-download"
@@ -90,7 +102,7 @@ def list_objects():
             if url:
                 files.append({'key': key, 'url': url, 'expires_at': expires_at})
 
-        return render_template("index.html", files=files, bucket_name=BUCKET_NAME)
+        return render_template("index.html", files=files, bucket_name=BUCKET_NAME, pod_name=POD_NAME, node_name=NODE_NAME, pod_ip=POD_IP, host_ip=HOST_IP,  uptime=get_uptime())
 
     except ClientError as e:
         return f"Error accessing bucket: {str(e)}", 500
@@ -123,4 +135,4 @@ def debug_cache():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False)
