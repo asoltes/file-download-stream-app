@@ -3,6 +3,7 @@ import boto3
 from botocore.exceptions import ClientError
 from datetime import datetime, timedelta
 import threading
+from flask import jsonify, request
 
 app = Flask(__name__)
 
@@ -20,6 +21,58 @@ cache_lock = threading.Lock()
 
 @app.route('/')
 def list_objects():
+    try:
+        response = s3_client.list_objects_v2(Bucket=BUCKET_NAME)
+        contents = response.get('Contents', [])
+        files = []
+
+        with cache_lock:
+            for obj in contents:
+                key = obj['Key']
+                now = datetime.utcnow()
+
+                if key in url_cache:
+                    cached = url_cache[key]
+                    if now < cached['expires_at']:
+                        print(f"Using cached URL for {key}")
+                        # Reuse existing URL
+                        files.append({
+                            'key': key,
+                            'url': cached['url'],
+                            'expires_at': cached['expires_at'].isoformat() + 'Z'
+                        })
+                        continue
+
+                # Create new presigned URL and cache it
+                try:
+                    presigned_url = s3_client.generate_presigned_url(
+                        'get_object',
+                        Params={'Bucket': BUCKET_NAME, 'Key': key},
+                        ExpiresIn=URL_EXPIRY_SECONDS
+                    )
+                    expires_at = now + timedelta(seconds=URL_EXPIRY_SECONDS)
+
+                    url_cache[key] = {
+                        'url': presigned_url,
+                        'expires_at': expires_at
+                    }
+
+                    files.append({
+                        'key': key,
+                        'url': presigned_url,
+                        'expires_at': expires_at.isoformat() + 'Z'
+                    })
+                except ClientError as e:
+                    print(f"Couldn't generate URL for {key}: {e}")
+                    continue
+
+        return render_template("index.html", files=files, bucket_name=BUCKET_NAME)
+
+    except ClientError as e:
+        return f"Error accessing bucket: {str(e)}", 500
+
+@app.route('/api/presigned_url', methods=['GET'])
+def get_presigned_urls():
     try:
         response = s3_client.list_objects_v2(Bucket=BUCKET_NAME)
         contents = response.get('Contents', [])
@@ -64,11 +117,13 @@ def list_objects():
                     print(f"Couldn't generate URL for {key}: {e}")
                     continue
 
-        return render_template("index.html", files=files, bucket_name=BUCKET_NAME)
+        return jsonify({
+            'bucket_name': BUCKET_NAME,
+            'files': files
+        })
 
     except ClientError as e:
-        return f"Error accessing bucket: {str(e)}", 500
-
+        return jsonify({'error': f"Error accessing bucket: {str(e)}"}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, debug=False)
