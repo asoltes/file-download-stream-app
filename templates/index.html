@@ -7,50 +7,49 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 text-gray-800 min-h-screen font-sans">
+    <div class="mt-8 text-lg text-gray-700 bg-blue-50 border-l-4 border-blue-400 p-6 rounded-xl space-y-4">
+
+        <!-- App Version + Description -->
+        <div class="text-center">
+            <h2 class="text-2xl font-bold text-blue-700">
+                App Version:
+                <span class="inline-block bg-blue-200 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full shadow-sm">
+                    v1.0.0
+                </span>
+            </h2>
+            <h3 class="text-xl text-gray-700 mt-2">Welcome to ArgoCD Demo Application</h3>
+            <p class="text-md text-gray-600 mt-1">
+                This is a simple application to demonstrate the use of ArgoCD for continuous deployment.
+            </p>
+
+            <p class="text-md text-gray-600 mt-1">
+                <span class="font-mono">Served by:</span> <strong>{{ pod_name }}</strong> on node <strong>{{ node_name }}</strong><br>
+                <span class="font-mono">PodIP:</span> <strong>{{ pod_ip }}</strong> |
+                <span class="font-mono">NodeIP:</span> <strong>{{ host_ip }}</strong>
+            </p>
+            <p class="text-sm text-gray-500 mt-2">
+                Current time: <span id="current-time" class="font-mono"></span>
+            </p>
+        </div>
+    
+        <!-- Clock Script -->
+        <script>
+          function updateTime() {
+            const now = new Date();
+            document.getElementById('current-time').innerText = now.toLocaleString();
+          }
+          setInterval(updateTime, 1000);
+          updateTime();
+        </script>
+    </div>
 
     <div class="container mx-auto p-6">
         <div class="bg-white shadow-md rounded-2xl p-6">
             <h1 class="text-3xl font-bold mb-4 text-blue-600">
                 📦 S3 Bucket: <span class="text-gray-700">{{ bucket_name }}</span>
             </h1>
-            <div class="mt-8 text-lg text-gray-700 bg-blue-50 border-l-4 border-blue-400 p-6 rounded-xl space-y-4">
+            
 
-                <!-- App Version + Description -->
-                <div class="text-center">
-                    <h2 class="text-2xl font-bold text-blue-700">
-                        App Version:
-                        <span class="inline-block bg-blue-200 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full shadow-sm">
-                            v1.0.0
-                        </span>
-                    </h2>
-                    <h3 class="text-xl text-gray-700 mt-2">Welcome to ArgoCD Demo Application</h3>
-                    <p class="text-md text-gray-600 mt-1">
-                        This is a simple application to demonstrate the use of ArgoCD for continuous deployment.
-                    </p>
-
-                    <p class="text-md text-gray-600 mt-1">
-                        <span class="font-mono">Served by:</span> <strong>{{ pod_name }}</strong> on node <strong>{{ node_name }}</strong><br>
-                        <span class="font-mono">PodIP:</span> <strong>{{ pod_ip }}</strong> |
-                        <span class="font-mono">NodeIP:</span> <strong>{{ host_ip }}</strong>
-                    </p>
-                    <p class="text-sm text-gray-500 mt-2">
-                        Current time: <span id="current-time" class="font-mono"></span>
-                    </p>
-                </div>
-            
-                <!-- Clock Script -->
-                <script>
-                  function updateTime() {
-                    const now = new Date();
-                    document.getElementById('current-time').innerText = now.toLocaleString();
-                  }
-                  setInterval(updateTime, 1000);
-                  updateTime();
-                </script>
-            </div>
-            
-            
-            
             {% if files %}
             <ul class="space-y-4" id="file-list">
                 {% for file in files %}

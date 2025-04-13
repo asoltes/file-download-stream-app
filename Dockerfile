@@ -1,19 +1,17 @@
-# Use a lightweight Python base image
 FROM python:3.11-slim
 
-# Set working directory
+RUN apt-get update && apt-get install -y nginx curl && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app files
-COPY app.py .
+COPY app.py ./
 COPY templates/ ./templates/
+COPY nginx.conf /etc/nginx/sites-available/default
+COPY start.sh .
 
-# Expose Flask default port
-EXPOSE 5000
+EXPOSE 80
 
-# Start the app
-CMD ["python", "app.py"]
+CMD ["./start.sh"]
