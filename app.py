@@ -108,7 +108,7 @@ def list_objects():
         return f"Error accessing bucket: {str(e)}", 500
 
 
-@app.route('/api/presigned_url', methods=['GET'])
+@app.route('/api/presigned', methods=['GET'])
 def get_presigned_urls():
     try:
         url_cache.clear_expired()
